@@ -68,7 +68,7 @@
     /**
      * Save settings
      */
-    public function execute() {
+    public function execute(...$functionArgs) {
       $contextId = $context = Request::getContext()->getId();
       $this->plugin->updateSetting($contextId, 'ArchivematicaStorageServiceUrl', $this->getData('ArchivematicaStorageServiceUrl'));
       $this->plugin->updateSetting($contextId, 'ArchivematicaStorageServiceSpaceUUID', $this->getData('ArchivematicaStorageServiceSpaceUUID'));
