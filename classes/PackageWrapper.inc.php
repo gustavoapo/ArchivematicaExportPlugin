@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/plugins/generic/sword/libs/swordappv2/packager_mets_swap.php';
+// require_once $_SERVER['DOCUMENT_ROOT'] . '/plugins/generic/sword/libs/swordappv2/packager_mets_swap.php';
 
 
 /**

@@ -1,0 +1,98 @@
+msgid "plugins.importexport.archivematica.displayName"
+msgstr "Módulo de exportación hacia Archivematica"
+
+msgid "plugins.importexport.archivematica.description"
+msgstr "Exporta artículos o números hacia Archivematica para su preservación."
+
+msgid "plugins.importexport.archivematica.exporttab"
+msgstr "Exportar datos"
+
+msgid "plugins.importexport.archivematica.export"
+msgstr "Exportar"
+
+msgid "plugins.importexport.archivematica.exportSubmissions"
+msgstr "Exportar Artículos"
+
+msgid "plugins.importexport.archivematica.exportIssues"
+msgstr "Exportar Números"
+
+msgid "plugins.importexport.archivematica.articleExportSuccess"
+msgstr "Artículo(s) exportado(s) correctamente."
+
+msgid "plugins.importexport.archivematica.issueExportSuccess"
+msgstr "Número(s) exportado(s) correctamente."
+
+msgid "plugins.importexport.archivematica.errorSendingFile"
+msgstr "archivos no fueron enviados."
+
+msgid "plugins.importexport.archivematica.errorContactAdmin"
+msgstr ". Por favor contacte al administrador del sistema."
+
+msgid "plugins.importexport.archivematica.permissionsError"
+msgstr "No se puede crear la carpeta, por favor verifique los permisos de la carpeta 'temp'  de OJS"
+
+msgid "plugins.importexport.archivematica.errorExportIssues"
+msgstr "Ha ocurrido el siguiente error:"
+
+msgid "plugins.importexport.archivematica.select"
+msgstr "Selecccionar"
+
+msgid "plugins.importexport.archivematica.number"
+msgstr "Número"
+
+msgid "plugins.importexport.archivematica.status"
+msgstr "Estatus"
+
+msgid "plugins.importexport.archivematica.article"
+msgstr "Artículos (preservados/totales)"
+
+msgid "plugins.importexport.archivematica.art"
+msgstr "Artículos"
+
+msgid "plugins.importexport.archivematica.exportArticles"
+msgstr "Exportar artículos"
+
+msgid "plugins.importexport.archivematica.selectCheckbox"
+msgstr "Por favor seleccione una casilla"
+
+msgid "plugins.importexport.archivematica.exportSelectedArticles"
+msgstr "Exportar artículos seleccionados"
+
+msgid "plugins.importexport.archivematica.maxAllowedDeposits"
+msgstr "Ha alcanzado el número máximo de depósitos permitidos."
+
+msgid "plugins.importexport.archivematica.preserved"
+msgstr "Preservado"
+
+msgid "plugins.importexport.archivematica.partiallyPreserved"
+msgstr "Parcialmente preservado"
+
+msgid "plugins.importexport.archivematica.notPreserved"
+msgstr "No preservado"
+
+msgid "plugins.importexport.archivematica.expiredContract"
+msgstr "Suscripción vencida"
+
+msgid "plugins.importexport.archivematica.availableDeposits"
+msgstr "Depósitos disponibles"
+
+msgid "plugins.importexport.archivematica.settings"
+msgstr "Ajustes"
+
+msgid "plugins.importexport.archivematica.ArchivematicaStorageServiceUrl"
+msgstr "URL del servicio de almacenamiento de Archivematica"
+
+msgid "plugins.importexport.archivematica.ArchivematicaStorageServiceSpaceUUID"
+msgstr "UUID del espacio en el servicio de almacenamiento"
+
+msgid "plugins.importexport.archivematica.ArchivematicaStorageServiceUser"
+msgstr "Usuario"
+
+msgid "plugins.importexport.archivematica.ArchivematicaStorageServicePassword"
+msgstr "Contraseña"
+
+msgid "plugins.importexport.archivematica.invalidUrl"
+msgstr "URL inválida"
+
+msgid "plugins.importexport.archivematica.fieldRequired"
+msgstr "Campo requerido"

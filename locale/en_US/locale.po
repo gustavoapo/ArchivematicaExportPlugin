@@ -1,0 +1,96 @@
+msgid "plugins.importexport.archivematica.displayName"
+msgstr "Archivematica Export Plugin"
+
+msgid "plugins.importexport.archivematica.description"
+msgstr "Exports articles or issues to Archivematica for its preservation."
+
+msgid "plugins.importexport.archivematica.exporttab"
+msgstr "Data export"
+
+msgid "plugins.importexport.archivematica.export"
+msgstr "Export"
+
+msgid "plugins.importexport.archivematica.exportSubmissions"
+msgstr "Export articles"
+
+msgid "plugins.importexport.archivematica.exportIssues"
+msgstr "Export issues"
+
+msgid "plugins.importexport.archivematica.articleExportSuccess"
+msgstr "Article(s) was successfully exported."
+
+msgid "plugins.importexport.archivematica.issueExportSuccess"
+msgstr "Issue(s) was successfully exported."
+
+msgid "plugins.importexport.archivematica.errorSendingFile"
+msgstr "files were not sent."
+
+msgid "plugins.importexport.archivematica.errorContactAdmin"
+msgstr ". Please contact the system administrator."
+
+msgid "plugins.importexport.archivematica.errorExportIssues"
+msgstr "An error has occurred:"
+
+msgid "plugins.importexport.archivematica.select"
+msgstr "Select"
+
+msgid "plugins.importexport.archivematica.number"
+msgstr "Number"
+
+msgid "plugins.importexport.archivematica.status"
+msgstr "Status"
+
+msgid "plugins.importexport.archivematica.selectCheckbox"
+msgstr "Please select a box"
+
+msgid "plugins.importexport.archivematica.article"
+msgstr "Articles (Preserved/Totals)"
+
+msgid "plugins.importexport.archivematica.art"
+msgstr "Articles"
+
+msgid "plugins.importexport.archivematica.exportArticles"
+msgstr "Export articles"
+
+msgid "plugins.importexport.archivematica.exportSelectedArticles"
+msgstr "Export selected articles"
+
+msgid "plugins.importexport.archivematica.maxAllowedDeposits"
+msgstr "The maximum number of deposits allowed has been reached."
+
+msgid "plugins.importexport.archivematica.preserved"
+msgstr "Preserved"
+
+msgid "plugins.importexport.archivematica.partiallyPreserved"
+msgstr "Partially Preserved"
+
+msgid "plugins.importexport.archivematica.notPreserved"
+msgstr "Not preserved"
+
+msgid "plugins.importexport.archivematica.expiredContract"
+msgstr "Expired subscription"
+
+msgid "plugins.importexport.archivematica.availableDeposits"
+msgstr "Available deposits"
+
+msgid "plugins.importexport.archivematica.settings"
+msgstr "Settings"
+
+msgid "plugins.importexport.archivematica.ArchivematicaStorageServiceUrl"
+msgstr "URL of Archivematica storage service"
+
+msgid "plugins.importexport.archivematica.ArchivematicaStorageServiceSpaceUUID"
+msgstr "UUID of Storage Space"
+
+msgid "plugins.importexport.archivematica.ArchivematicaStorageServiceUser"
+msgstr "Username"
+
+msgid "plugins.importexport.archivematica.ArchivematicaStorageServicePassword"
+msgstr "Password"
+
+msgid "plugins.importexport.archivematica.invalidUrl"
+msgstr "invalid URL"
+
+msgid "plugins.importexport.archivematica.fieldRequired"
+msgstr "This field is required"
+

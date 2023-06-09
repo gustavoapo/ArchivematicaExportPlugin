@@ -21,13 +21,8 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 	 * @copydoc Plugin::register()
 	 */
 	function register($category, $path, $mainContextId = null) {
-		AppLocale::requireComponents(LOCALE_COMPONENT_APP_COMMON,
-			LOCALE_COMPONENT_APP_SUBMISSION,
-			LOCALE_COMPONENT_PKP_SUBMISSION);
-
 		$success = parent::register($category, $path, $mainContextId);
 		$this->addLocaleData();
-
 		return $success;
 	}
 
@@ -72,82 +67,98 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 	 */
 
 	function display($args, $request) {
-		$this->import('classes.ArchivematicaSettingsForm');
-
+		import('plugins.importexport.archivematicaExport.classes.ArchivematicaSettingsForm');
+		
 		parent::display($args, $request);
 		$templateMgr = TemplateManager::getManager($request);
 		$journal = $request->getJournal();
+		$context = $request->getContext();
 		$this->context = $request->getContext();
 		$this->request = $request;
 
 		switch (array_shift($args)) {
 			case 'index': //Index page
 			case '':
-			import('lib.pkp.controllers.list.submissions.SelectSubmissionsListHandler');
-			$exportSubmissionsListHandler = new SelectSubmissionsListHandler(array(
-				'title' => 'plugins.importexport.native.exportSubmissionsSelect',
-				'count' => 100,
-				'inputName' => 'selectedSubmissions[]',
-			));
-
-			$templateMgr->assign('pluginName', $this->getName());
-			$templateMgr->assign('exportSubmissionsListData', json_encode($exportSubmissionsListHandler->getConfig()));
-			$templateMgr->display($this->getTemplateResource('exportPage.tpl'));
-			break;
+				$apiUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'submissions');
+				$submissionsListPanel = new \APP\components\listPanels\SubmissionsListPanel(
+					'submissions',
+					__('common.publications'),
+					[
+						'apiUrl' => $apiUrl,
+						'count' => 100,
+						'getParams' => new stdClass(),
+						'lazyLoad' => true,
+					]
+				);
+				$submissionsConfig = $submissionsListPanel->getConfig();
+				$submissionsConfig['addUrl'] = '';
+				$submissionsConfig['filters'] = array_slice($submissionsConfig['filters'], 1);
+				$templateMgr->setState([
+					'components' => [
+						'submissions' => $submissionsConfig,
+					],
+				]);
+				$templateMgr->assign([
+					'pageComponent' => 'ImportExportPage',
+				]);
+				$templateMgr->display($this->getTemplateResource('exportPage.tpl'));
+				break;
 
 			case 'saveSettings':
-
-			$form = new ArchivematicaSettingsForm($this);
-
-			$form->readInputData();
-			if ($form->validate()) {
-				$form->execute();
-				return new JSONMessage(true);
-			}else{
-				return new JSONMessage(false);
-			}
-			break;
+				$form = new ArchivematicaSettingsForm($this,$context->getId());
+				$form->readInputData();
+				if ($form->validate()) {
+					$form->execute();
+					return new JSONMessage(true);
+				}else{
+					return new JSONMessage(false);
+				}
+				break;
 
 			case 'loadSettings':
-			$form = new ArchivematicaSettingsForm($this);
-			$form->initData();
-			return new JSONMessage(true, $form->fetch($request));
-			break;
+				$form = new ArchivematicaSettingsForm($this,$context->getId());
+				$form->initData();
+				return new JSONMessage(true, $form->fetch($request));
+				break;
 
 			case 'exportSubmissions': //Send compressed XML file with articles  in native format.
-			$items = array();
-			$submissionDao = DAORegistry::getDAO('PublishedArticleDAO');
-			$issueIds = $request->getUserVar('selectedIssues');
-			$exportXml = array();
-			if(!empty($issueIds)){
-				foreach ($issueIds as $issueId) {
-					$pubArts = $submissionDao->getPublishedArticles($issueId);
-					$submissionIds = array();
-					foreach ($pubArts as $pa) {
-						$submissionIds[] = $pa->getId();
-						$items[] = $pa->getId();
+				// $exportXml = $this->exportSubmissions(
+				// 	(array) $request->getUserVar('selectedIssues'),
+				// 	$request->getContext(),
+				// 	$request->getUser()
+				// );
+				// dd($exportXml);
+				$items = array();
+				$submissionDao = DAORegistry::getDAO('IssueDAO');
+				$issueIds = $request->getUserVar('selectedIssues');
+				$exportXml = array();
+				if(!empty($issueIds)){
+					foreach ($issueIds as $issueId) {
+						$issue = $submissionDao->getById($issueId, $context->getId());
+						if ($issue) $issues[] = $issue;
+						$sended = $this->deposit($issues);
 					}
+
+				}else{
+					$items = (array) $request->getUserVar('selectedSubmissions');
 					$sended = $this->deposit($items);
 				}
+				
 
-			}else{
-				$items = (array) $request->getUserVar('selectedSubmissions');
-				$sended = $this->deposit($items);
-			}
-
-			$json = new JSONMessage(false, ($sended > 0 ? '(' . $sended . ')  ' . __('plugins.importexport.archivematica.articleExportSuccess') : "" ) . ($sended == 0 ?  __('plugins.importexport.archivematica.errorSendingFile') .  __('plugins.importexport.archivematica.errorContactAdmin') : ""));
-			header('Content-Type: application/json');
-			echo $json->getString();
-			break;
+				$json = new JSONMessage(false, ($sended > 0 ? '(' . $sended . ')  ' . __('plugins.importexport.archivematica.articleExportSuccess') : "" ) . ($sended == 0 ?  __('plugins.importexport.archivematica.errorSendingFile') .  __('plugins.importexport.archivematica.errorContactAdmin') : ""));
+				header('Content-Type: application/json');
+				echo $json->getString();
+				break;
 
 			case 'getGrid':
-			$gridType = $args[0];
-			$this->getGrid($gridType, $args, $request);
-			break;
+				$gridType = $args[0];
+				$this->getGrid($gridType, $args, $request);
+				break;
 
 			default:
-			$dispatcher = $request->getDispatcher();
-			$dispatcher->handle404();
+				$dispatcher = $request->getDispatcher();
+				$dispatcher->handle404();
+				break;
 		}
 	}
 
