@@ -77,7 +77,19 @@ class ListGridHandler extends GridHandler {
 			return $issueDao->getIssues($journal->getId(), $this->getGridRangeInfo($request, $this->getId()));
 		}else if($dao['type'] == 'submission'){
 			$submissionDao = $this->dao["dao"];
-			return $submissionDao->getPublishedArticles($this->getIssueId());
+            if (get_class($submissionDao)=="SubmissionDAO")
+                return $submissionDao->getExportable(
+                    '1'/*contextId*/
+                    ,null/*pubIdType*/
+                    ,null/*title*/
+                    ,null/*author*/
+                    ,$this->getIssueId()/*issueId*/
+                    ,null/*pubIdSettingName*/
+                    ,null/*pubIdSettingValue*/
+                    ,null/*$rangeInfo*/
+                );
+            else
+                return $submissionDao->getByPublicationId($this->getIssueId(),null);
 		}
 	}
 

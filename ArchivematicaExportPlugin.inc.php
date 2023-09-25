@@ -16,6 +16,7 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 	var $request;
 	var $_plugin;
 	var $objects = array();
+    var string $error = '';
 
 	/**
 	 * @copydoc Plugin::register()
@@ -122,12 +123,6 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 				break;
 
 			case 'exportSubmissions': //Send compressed XML file with articles  in native format.
-				// $exportXml = $this->exportSubmissions(
-				// 	(array) $request->getUserVar('selectedIssues'),
-				// 	$request->getContext(),
-				// 	$request->getUser()
-				// );
-				// dd($exportXml);
 				$items = array();
 				$submissionDao = DAORegistry::getDAO('IssueDAO');
 				$issueIds = $request->getUserVar('selectedIssues');
@@ -143,9 +138,8 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 					$items = (array) $request->getUserVar('selectedSubmissions');
 					$sended = $this->deposit($items);
 				}
-				
 
-				$json = new JSONMessage(false, ($sended > 0 ? '(' . $sended . ')  ' . __('plugins.importexport.archivematica.articleExportSuccess') : "" ) . ($sended == 0 ?  __('plugins.importexport.archivematica.errorSendingFile') .  __('plugins.importexport.archivematica.errorContactAdmin') : ""));
+				$json = new JSONMessage(false, ($sended > 0 ? '(' . $sended . ')  ' . __('plugins.importexport.archivematica.articleExportSuccess') : "" ) . ($sended == 0 ? $this->error. __('plugins.importexport.archivematica.errorSendingFile') .  __('plugins.importexport.archivematica.errorContactAdmin') : ""));
 				header('Content-Type: application/json');
 				echo $json->getString();
 				break;
@@ -172,7 +166,7 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 	function getGrid($gridType, $args, $request){
 		$offset = '';
 		$this->import("classes.ListGridHandler");
-		$this->import("classes.IssueGridCellProvider");
+		$this->import("classes.IssueGridCellProviderArchiveMatica");
 		$this->import("classes.SubmissionGridCellProvider");
 
 		if(!(empty($args))){
@@ -180,7 +174,7 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 			if($args == "articles"){
 				$issueId = $request->_requestVars['issueId'];
 				$journal = $request->getJournal();
-				$submissionDao = DAORegistry::getDAO('PublishedArticleDAO');
+				$submissionDao = DAORegistry::getDAO('SubmissionDAO');
 				$submissionGridCellProvider = new SubmissionGridCellProvider();
 				$issueDao = DAORegistry::getDAO('IssueDAO');
 				$issue = $issueDao->getById($issueId);
@@ -233,7 +227,7 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 				$journal = $request->getJournal();
 				$issueDao = DAORegistry::getDAO('IssueDAO');
 				$dataProvider = $issueDao->getIssues($journal->getId());
-				$issueGridCellProvider = new IssueGridCellProvider();
+				$issueGridCellProvider = new IssueGridCellProviderArchiveMatica();
 
 				$gh =  new ListGridHandler($request, $args);
 				$gh->setId("issues-grid");
@@ -293,10 +287,8 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 	 * @return JSON String
 	 */
 	function getDepositedFilesByIsisueId($issueId){
-		$publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-
-		$result = $publishedArticleDao->retrieve('SELECT COUNT(*) FROM published_submissions ps INNER JOIN submission_settings ss ON ss.submission_id = ps.submission_id WHERE ps.issue_id = ? AND ss.setting_name = ? ', array($issueId, 'depositUUID'));
-		$count = $result->fields[0];
+		$submissionDAO = DAORegistry::getDAO('SubmissionDAO');
+		$count = $submissionDAO->countRecords('SELECT p.* FROM publications p INNER JOIN publication_settings ps on p.publication_id = ps.publication_id INNER JOIN submission_settings ss ON ss.submission_id = p.submission_id WHERE ps.setting_value = ? AND ss.setting_name = ? ', array($issueId, 'depositUUID'));
 		return $count;
 	}
 
@@ -309,11 +301,24 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 		$request = $this->request;
 		$context = $request->getContext();
 		$issueId = $request->getUserVar('issueId');
-		$publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
+		$publishedArticleDao = DAORegistry::getDAO('SubmissionDAO');
 
 		$depositCount = 0;
 		foreach ($articleIds as $articleId) {
-			$publishedArticle = $publishedArticleDao->getByArticleId($articleId);
+			$publishedArticles = $publishedArticleDao->getExportable(
+                                                            $this->context->getId()/*contextId*/
+                                                            ,null/*pubIdType*/
+                                                            ,null/*title*/
+                                                            ,null/*author*/
+                                                            ,$issueId/*issueId*/
+                                                            ,'issueId'/*pubIdSettingName*/
+                                                            ,null/*pubIdSettingValue*/
+                                                            ,null/*$rangeInfo*/
+                                                        )->toArray();
+
+            if(!($publishedArticle=$this->getByArticleId($publishedArticles, $articleId)))
+                break;
+
 
 			$exportXml = $this->exportSubmissions(
 				$articleId,
@@ -324,21 +329,21 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 
 
 			try {
-				$deposit = new DepositWrapper($publishedArticle);
+                $deposit = new DepositWrapper($publishedArticle);
 				$deposit->setNativeXML($exportXml);
 				$deposit->setMetadata($request);
 				$deposit->addGalleys();
 				$deposit->createPackage($publishedArticle);
 				$response = $this->handleDeposit($deposit);
-				$data = $publishedArticle->getAllData();
+				$data = $publishedArticleDao->retrieve('SELECT * FROM submission_settings WHERE submission_id= ? AND setting_name= ?  ', array($articleId, 'depositUUID'))->current();
 				$uuid = (string)$response->id;
 				$uuid = trim($uuid);
 				if(strlen($uuid) > 3){
-					if(!array_has($data, 'depositUUID')){
-						$publishedArticleDao->update('INSERT INTO submission_settings (submission_id, setting_name, setting_value, setting_type) VALUES (?, ?, ?, ?)', array($articleId, 'depositUUID', $uuid, 'string'));
+					if(!($data)){
+						$publishedArticleDao->update('INSERT INTO submission_settings (submission_id, setting_name, setting_value) VALUES (?, ?, ?)', array($articleId, 'depositUUID', $uuid));
 						$this->handlePackage($deposit, $uuid, false);
 					}else{
-						$this->handlePackage($deposit, $data["depositUUID"], true);
+						$this->handlePackage($deposit, $data->setting_value, true);
 					}
 					$depositCount++;
 				}
@@ -354,6 +359,21 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 		return $depositCount;
 	}
 
+    public function getByArticleId(array $submissions, int $articleId): ?Submission
+    {
+        foreach ($submissions as $submission){
+            if($submission->_data['id']==$articleId){
+                return $submission;
+            }
+        }
+        $this->showError('CODE: Find Articles - ');
+        return null;
+    }
+
+    public function showError($error)
+    {
+        $this->error = $error;
+    }
 
 	/**
 	 * Generate the transfer using curl
@@ -417,17 +437,14 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 
 		$output = $sac_root_out . DIRECTORY_SEPARATOR . $sac_file_out;
 
-		if(!$update)
-			$sac_url = $settings["ArchivematicaStorageServiceUrl"] . '/api/v1/file/' . $uuid . '/sword/media/';
-		else
-			$sac_url = $settings["ArchivematicaStorageServiceUrl"] . '/api/v1/location/' . $uuid . '/sword/media/';
+        $sac_url = $settings["ArchivematicaStorageServiceUrl"] . '/api/v1/file/' . $uuid . '/sword/media/';
 
 		$sac_u = $settings["ArchivematicaStorageServiceUser"];
 		$sac_p = $settings["ArchivematicaStorageServicePassword"];
 		$sac_curl = $deposit->curl_init($sac_url, $sac_u, $sac_p);
 
 		$headers = array();
-		curl_setopt($sac_curl, CURLOPT_POST, 1);
+        curl_setopt($sac_curl, $update?CURLOPT_PUT:CURLOPT_POST, 1);
 
 		curl_setopt($sac_curl, CURLOPT_USERAGENT, 'curl/7.64.0');
 		array_push($headers, "Content-Disposition: attachment; filename=" .  $sac_file_out);
@@ -438,7 +455,7 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 		$sac_resp = curl_exec($sac_curl);
 		$sac_status = curl_getinfo($sac_curl, CURLINFO_HTTP_CODE);
 		curl_close($sac_curl);
-		if (($sac_status >= 200) && ($sac_status < 300)) {
+		if (($sac_status >= 200) && ($sac_status < 300) || $sac_status==100) {
 			try {
 				//$sac_xml = @new SimpleXMLElement($sac_resp);
 				$this->closeTransfer($deposit, $uuid);
@@ -477,7 +494,7 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 	 */
 	function getSettings(){
 		$settingsArr = array();
-		$contextId = $context = Request::getContext()->getId();
+		$contextId = $context = $this->context->getId();
 		$plugin = PluginRegistry::getPlugin('importexport', 'ArchivematicaExportPlugin');
 		
 		$settingsArr["ArchivematicaStorageServiceUrl"] = $plugin->getSetting($contextId, 'ArchivematicaStorageServiceUrl');
@@ -519,9 +536,10 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 		foreach($domArray as $node){
 			$submissionFileDao = DAORegistry::getDAO('SubmissionFileDAO');
 			$fileId = $node->getAttribute('id');
-			$submissionFile = $submissionFileDao->getLatestRevision($fileId);
+			$dios = $submissionFileDao->getRevisions($fileId);
+			$submissionFile = $submissionFileDao->getRevisions($fileId)[0];
 
-			$node->setAttribute('src', $submissionFile->getFilePath());
+			$node->setAttribute('src', $submissionFile->path);
 
 	        foreach ( $node->childNodes as $cnodes ) {
 	        	foreach ($cnodes->childNodes as $childs) {

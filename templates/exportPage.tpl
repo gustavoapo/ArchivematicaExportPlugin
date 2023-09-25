@@ -7,7 +7,56 @@
 
 {block name="page"}
 
-<script type="text/javascript"> 
+<script type="text/javascript">
+	/*styles*/
+
+	{literal}
+	$('<style>').text(
+			`
+						.dot{
+							height: 20px;
+							width: 20px;
+							border-radius: 50%;
+							display: inline-block;
+						}
+						.dot-available{
+							border-radius: 20%;
+							display: inline-block;
+							text-align: center;
+							background-color: #5ccad0;
+							padding-left: 5px;
+							padding-right: 5px;
+						}
+						.dot-deposited {
+							background-color: #1bbb22;
+						}
+						.dot-expired {
+							background-color: #ca1a1a;
+						}
+						.dot-not-all {
+							background-color: #e89d12;
+						}
+						.dot-not-deposited {
+							background-color: #ccc;
+						}
+						.info-aep{
+							border-top: 1px solid #ccc;
+							border-bottom: 1px solid #ccc;
+							width: 250px;
+							height: 120px;
+							float: right;
+							margin-top: -2em;
+						}
+						.info-eap-li{
+							display: flex;
+						}
+						`
+	).appendTo(document.head);
+	{/literal}
+
+	/*styles*/
+
+
 	// Attach the JS file tab handler.
 	$(function() {ldelim}
 	$('#exportTabs').pkpHandler('$.pkp.controllers.TabHandler');
@@ -55,55 +104,6 @@
 	{rdelim});
 </script>
 
-<style type="text/css">
-	.dot{
-		height: 20px;
-		width: 20px;
-		border-radius: 50%;
-		display: inline-block;	
-	}
-
-	.dot-available{
-		border-radius: 20%;
-		display: inline-block;
-		text-align: center;
-		background-color: #5ccad0 !important;
-		padding-left: 5px;
-		padding-right: 5px;
-	}
-
-	.dot-deposited {
-		background-color: #1bbb22 !important;
-	}
-
-	.dot-expired {
-		background-color: #ca1a1a !important;
-	}
-
-
-	.dot-not-all {
-		background-color: #e89d12 !important;
-	}
-
-	.dot-not-deposited {
-		background-color: #ccc !important;
-	}
-
-	.info-aep{
-		border-top: 1px solid #ccc;
-		border-bottom: 1px solid #ccc;
-		width: 250px;
-		height: 120px;
-		float: right;
-		margin-top: -2em;	
-	}
-
-	.info-eap-li{
-		display: flex;
-	}
-
-</style>
-
 <div id="exportTabs">
 	<ul>
 		<li><a href="#exportIssues-tab">{translate key="plugins.importexport.archivematica.exportIssues"}</a></li>
@@ -123,8 +123,11 @@
 			{fbvFormArea id="issuesXmlForm"}
 
 				
-				{capture assign="issuesListGridUrl"}{url router=$smarty.const.ROUTE_COMPONENT component="grid.issues.ExportableIssuesListGridHandler" op="fetchGrid" escape=false}{/capture}
-				{load_url_in_div id="issuesListGridContainer" url=$issuesListGridUrl}
+				{*capture assign="issuesListGridUrl"}{url router=$smarty.const.ROUTE_COMPONENT component="grid.issues.ExportableIssuesListGridHandler" op="fetchGrid" escape=false}{/capture}
+				{load_url_in_div id="issuesListGridContainer" url=$issuesListGridUrl*}
+				{*$smarty.server.REQUEST_URI|cat:"/getGrid/issues"*}
+			{assign var="issuesListGridUrl" value=$smarty.server.REQUEST_URI|cat:"/getGrid/issues"}
+			{load_url_in_div id="issuesListGridContainer" url=$issuesListGridUrl}
 
 				<div class="info-aep">
 					<ul>

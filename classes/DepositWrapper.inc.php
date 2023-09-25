@@ -7,10 +7,10 @@
  * @brief Override OJSSwordDeposit class to generate custom deposit
  */
 
-import('plugins.generic.sword.classes.OJSSwordDeposit');
-import('plugins.importexport.archivematica.classes.PackageWrapper');
+import('plugins.generic.sword.classes.PKPSwordDeposit');
+import('plugins.importexport.archivematicaExport.classes.PackageWrapper');
 
-class DepositWrapper extends OJSSwordDeposit{
+class DepositWrapper extends PKPSwordDeposit{
 
 	protected $_package = null;
 	protected $_outPath = null;
@@ -39,19 +39,30 @@ class DepositWrapper extends OJSSwordDeposit{
 		);
 
 		$journalDao = DAORegistry::getDAO('JournalDAO');
-		$this->_context = $journalDao->getById($submission->getContextId());
+		$this->_context = $journalDao->getById($submission->getData('contextId')/*$submission->getContextId()*/);
 
 		$sectionDao = DAORegistry::getDAO('SectionDAO');
 		$this->_section = $sectionDao->getById($submission->getSectionId());
 
-		$publishedArticleDao = DAORegistry::getDAO('PublishedArticleDAO');
-		$publishedArticle = $publishedArticleDao->getByArticleId($submission->getId());
+		$publishedArticleDao = DAORegistry::getDAO('SubmissionDAO');
+        $publishedArticle = $publishedArticleDao->getExportable(
+            '1'/*contextId*/
+            ,null/*pubIdType*/
+            ,null/*title*/
+            ,null/*author*/
+            ,$submission->getId()/*issueId*/
+            ,'issueId'/*pubIdSettingName*/
+            ,null/*pubIdSettingValue*/
+            ,null/*$rangeInfo*/
+        );
 
 		$issueDao = DAORegistry::getDAO('IssueDAO');
 		if ($publishedArticle) {
-			$this->_issue = $issueDao->getById($publishedArticle->getIssueId());
-			$this->_article = $publishedArticle;
+			$this->_issue = $issueDao->getById($submission->getSectionId());
+			//$this->_article = $publishedArticle;
 		}
+        $this->_submission=$submission;
+        $this->_article = $this->_context;
 	}
 
 
