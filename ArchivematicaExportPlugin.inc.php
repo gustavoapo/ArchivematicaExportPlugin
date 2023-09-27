@@ -536,7 +536,6 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 		foreach($domArray as $node){
 			$submissionFileDao = DAORegistry::getDAO('SubmissionFileDAO');
 			$fileId = $node->getAttribute('id');
-			$dios = $submissionFileDao->getRevisions($fileId);
 			$submissionFile = $submissionFileDao->getRevisions($fileId)[0];
 
 			$node->setAttribute('src', $submissionFile->path);

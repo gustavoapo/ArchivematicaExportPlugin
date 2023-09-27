@@ -32,14 +32,13 @@ class IssueGridCellProviderArchiveMatica extends GridCellProvider {
 			unset($url[count($url) - 1]);
             $application = Application::get();
             $dispatcher = $application->getDispatcher();
+			$encodeUrlArticles=$router->url($request, null, "management/importexport/plugin/ArchivematicaExportPlugin/getGrid", 'articles', null, array('issueId' => $issue->getId()));
+            $decodeUrlArticles=urldecode($encodeUrlArticles);
 			return array(
 				new LinkAction(
 					'edit',
 					new AjaxModal(
-						'/index.php/pathpathpath/management/importexport/plugin/ArchivematicaExportPlugin/getGrid/articles?issueId=' . $issue->getId()
-                        //$dispatcher->url($request, ROUTE_COMPONENT, null, 'grid.issues.BackIssueGridHandler', 'editIssue', null, array('issueId' => $issue->getId()))
-                        //$dispatcher->url($request, null, null, 'addGalley', null, $this->getRequestArgs())
-                        //$dispatcher->url($request, ROUTE_COMPONENT, null, 'grid.settings.plugins.SettingsPluginGridHandler', 'manage', null, array('plugin' => 'doipubidplugin', 'category' => 'pubIds'))
+						$decodeUrlArticles
                         ,
 						__('editor.issues.editIssue', array('issueIdentification' => $issue->getIssueIdentification())),
 						'modal_edit',
