@@ -14,6 +14,7 @@ class SubmissionGridCellProvider extends GridCellProvider {
 		$submission = $row->getData();
 
 		$submissionId = $submission->getId();
+		$isDeposited = ArchivematicaExportPlugin::isDepositedFilesBySubmissionId($submissionId);
 
 		switch ($column->getId()) {
 			case 'select':
@@ -23,11 +24,11 @@ class SubmissionGridCellProvider extends GridCellProvider {
 			return array('label' => $submission->getLocalizedTitle(null));
 			case 'status':
 			$data = $submission->getAllData();
-			/*if (array_has($data, 'depositUUID')) { these lines have commented because there aren't this key
+			if ($isDeposited) {
 					$status = '<span class="dot dot-deposited"></span>';
-			}else{*/
+			}else{
 				$status = '<span class="dot dot-not-deposited "></span>';
-			/*}*/
+			}
 
 			return array('label' => $status);
 		}

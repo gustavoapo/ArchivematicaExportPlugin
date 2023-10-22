@@ -284,11 +284,27 @@ class ArchivematicaExportPlugin extends ImportExportPlugin {
 
 	/**
 	 * Get deposited files from storage service by IssueId
-	 * @return JSON String
+	 * @return int
 	 */
-	function getDepositedFilesByIsisueId($issueId){
+	static function getDepositedFilesByIssueId($issueId): int
+	{
 		$submissionDAO = DAORegistry::getDAO('SubmissionDAO');
 		$count = $submissionDAO->countRecords('SELECT p.* FROM publications p INNER JOIN publication_settings ps on p.publication_id = ps.publication_id INNER JOIN submission_settings ss ON ss.submission_id = p.submission_id WHERE ps.setting_value = ? AND ss.setting_name = ? ', array($issueId, 'depositUUID'));
+		return $count;
+	}
+
+	/**
+	 * Get deposited files from storage service by SubmissionId
+	 * @return int
+	 */
+	static function isDepositedFilesBySubmissionId($submissionId): bool
+	{
+		$submissionDAO = DAORegistry::getDAO('SubmissionDAO');
+		$count = $submissionDAO->countRecords('SELECT s.* FROM submissions s
+			INNER JOIN submission_settings ss ON ss.submission_id = s.submission_id
+			WHERE s.submission_id = ? AND ss.setting_name = ? '
+			  , array($submissionId, 'depositUUID')
+		);
 		return $count;
 	}
 

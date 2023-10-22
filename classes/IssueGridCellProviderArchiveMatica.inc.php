@@ -58,7 +58,7 @@ class IssueGridCellProviderArchiveMatica extends GridCellProvider {
 	function getTemplateVarsFromRowColumn($row, $column) {
 		$issue = $row->getData();
 		$issueId = $issue->getId();
-		$issueCount = ArchivematicaExportPlugin::getDepositedFilesByIsisueId($issueId);
+		$issueCount = ArchivematicaExportPlugin::getDepositedFilesByIssueId($issueId);
 
 
 		switch ($column->getId()) {
